@@ -23,7 +23,7 @@ app.add_middleware(
 
 # Initialize the Gemini Client
 ai_client = genai.Client()
-MODEL_NAME = 'gemini-3.6-flash' # Using your original model version
+MODEL_NAME = 'gemini-2.5-flash' # Gemini 2.5 Flash
 
 # --- Database Setup ---
 DB_FILE = "civicpulse.db"
