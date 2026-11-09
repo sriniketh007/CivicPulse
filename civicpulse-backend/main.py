@@ -1,9 +1,13 @@
 import json
+import os
 import sqlite3
 import uuid
+from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -26,7 +30,8 @@ ai_client = genai.Client()
 MODEL_NAME = 'gemini-2.5-flash' # Gemini 2.5 Flash
 
 # --- Database Setup ---
-DB_FILE = "civicpulse.db"
+BASE_DIR = Path(__file__).resolve().parent
+DB_FILE = str(BASE_DIR / "civicpulse.db")
 
 def init_sqlite_db():
     """Initializes the database table if it doesn't exist."""
@@ -149,6 +154,20 @@ async def get_all_reports():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Serve the built React frontend from dist/ (only in production)
+dist_dir = BASE_DIR / "dist"
+if dist_dir.exists():
+    app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")
+
+    @app.get("/", include_in_schema=False)
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str = ""):
+        # Don't intercept /api routes
+        index = dist_dir / "index.html"
+        return FileResponse(str(index))
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 7860))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)

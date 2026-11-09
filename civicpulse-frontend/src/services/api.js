@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:8000';
 
 // We restored your original function name here: classifyCitizenText
 export const classifyCitizenText = async (text, queryTopic = "General Community Needs") => {
